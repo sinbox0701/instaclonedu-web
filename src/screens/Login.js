@@ -1,5 +1,6 @@
 import { faFacebookSquare, faInstagram } from "@fortawesome/free-brands-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {gql, useMutation} from "@apollo/client";
 import { useForm } from "react-hook-form";
 import styled from "styled-components";
 import AuthLayout from "../components/auth/AuthLayout";
@@ -11,6 +12,7 @@ import Input from "../components/auth/Input";
 import Separator from "../components/auth/Separator";
 import PageTitle from "../components/PageTitle";
 import routes from "../routes";
+import { logUserIn } from "../apollo";
 
 const FacebookLogin = styled.div`
   color: #385285;
@@ -20,19 +22,61 @@ const FacebookLogin = styled.div`
   }
 `;
 
-function Login() {
-    const {register,handleSubmit,errors,formState} = useForm({
-        mode:"onChange",
-    })
-    //mode --> form의 유효성을 검증하는 많은 모드 존재
-    //mode가 onChange 이므로 Input data 값이 유효하게 입력되었는지 확인 유효하면 true 반환 아니면 false 반환
-    //register --> 태그에 ref 사용 각각 태그 식별을 위해 name 사용
-    //watch --> value 확인
-    //error --> 태그에 만들어논 제한 조건(valid)에 위반하면 실시간으로 에러 데이터 저장 
-    //formState --> data 변경이 일어나면 전부 확인 formState.isValid 유효성 검사 후 맞으면 true
-    const onSubmitValid = (data) => {
-        console.log(data);
+const LOGIN_MUTATION = gql`
+    mutation Login($username:String!,$password:String!){
+        login(username:$username,password:$password){
+            ok
+            token
+            error
+        }
     }
+`;
+//altair에서 하듯이 gql문 작성해주기
+
+function Login() {
+    const {register,handleSubmit,errors,formState,getValues,setError,clearErrors} = useForm({
+        mode:"onChange",
+    });
+    //getValues --> useForm안에 받아놓은 value 반환
+    //setError--> error custumizing
+    //clearErrors --> 원하는 에러 삭제
+    const onCompleted = (data) => {
+        const {
+            login:{ok,error,token}
+        } = data;//받아온 데이터 중 login이라는 데이터안의 ok,error,token 값을 받아옴
+        //이해가 안된다면 consile.log(data) 해보세유
+        if(!ok){
+            return setError("result",{
+                message:error
+            });
+            //error 발생시 에러를 result:발생한 에러 로 저장하기 위해 사용
+        }
+        if(token){
+            logUserIn(token);
+        }
+    };
+    /* 함수명을 onCompleted라 지은 이유 
+       --> 아래에 useMutation을 사용할 때 useMutation에서 
+       onCompleted:함수명 을 사용할수 있는데 사용하게되면 useMutation 동작 처리가 끝나기 직전에 
+       불러온 함수를 사용한다
+       onCompleted:함수명 이렇게 쓰기 귀찮으니까 함수명을 onCompleted로 하여 onCompleted만 쓰게하려고
+    */
+    const [login,{loading}] = useMutation(LOGIN_MUTATION,{
+        onCompleted,
+    });
+    const clearLoginError = () => {
+        clearErrors("result");
+        //위에서 생성한 result:error들을 전부 지움
+    };
+    const onSubmitValid = (data) => {
+        if(loading){
+            return ;
+        }
+        const {username,password} = getValues();
+        login({
+            variables:{username,password}
+        });
+    };
     return (
         <AuthLayout>
             <PageTitle title="Login" />
@@ -49,6 +93,7 @@ function Login() {
                                 message:"Username should be longer than 5 chars."
                             }
                         })}
+                        onChange={clearLoginError}
                         name="username"
                         type="text" 
                         placeholder="Username"
@@ -59,13 +104,15 @@ function Login() {
                         ref={register({
                             required:"Password is required",
                         })}
+                        onChange={clearLoginError}
                         name="password"
                         type="password" 
                         placeholder="Password"
                         hasError={Boolean(errors?.password?.message)} 
                     />
                     <FormError message={errors?.password?.message} />
-                    <Button type="submit" value="Login" disabled={!formState.isValid} />
+                    <Button type="submit" value={loading ? "Loading..." :"Login"} disabled={!formState.isValid || loading} />
+                    <FormError message={errors?.result?.message} />
                 </form>
                 <Separator>
                     <div></div>
