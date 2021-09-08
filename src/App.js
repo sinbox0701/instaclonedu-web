@@ -1,4 +1,4 @@
-import {ApolloClient, useReactiveVar} from "@apollo/client";
+import { ApolloProvider, useReactiveVar} from "@apollo/client";
 import {HashRouter as Router, Route, Switch} from "react-router-dom";
 import { isLoggedInVar,darkModeVar, client } from "./apollo";
 import {ThemeProvider} from "styled-components";
@@ -15,7 +15,7 @@ function App() {
   const darkMode = useReactiveVar(darkModeVar);
 
   return (
-    <ApolloClient client={client} >
+    <ApolloProvider client={client} >
       <HelmetProvider>
         <ThemeProvider theme={darkMode ? darkTheme : lightTheme}>
           <GlobalStyles/>
@@ -36,7 +36,7 @@ function App() {
           </Router>
         </ThemeProvider>
       </HelmetProvider>
-    </ApolloClient>
+    </ApolloProvider>
   );
 }
 
