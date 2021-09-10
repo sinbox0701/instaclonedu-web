@@ -13,6 +13,7 @@ import Separator from "../components/auth/Separator";
 import PageTitle from "../components/PageTitle";
 import routes from "../routes";
 import { logUserIn } from "../apollo";
+import { useLocation } from "react-router";
 
 const FacebookLogin = styled.div`
   color: #385285;
@@ -20,6 +21,10 @@ const FacebookLogin = styled.div`
     margin-left: 10px;
     font-weight: 600;
   }
+`;
+
+const Notification = styled.div`
+  color: #2ecc71;
 `;
 
 const LOGIN_MUTATION = gql`
@@ -31,42 +36,36 @@ const LOGIN_MUTATION = gql`
         }
     }
 `;
-//altair에서 하듯이 gql문 작성해주기
 
 function Login() {
+    const location = useLocation();//useHistory에서 넘어온 값을 사용가능하게 해줌
     const {register,handleSubmit,errors,formState,getValues,setError,clearErrors} = useForm({
         mode:"onChange",
+        defaultValues:{
+            username:location?.state?.username || "",
+            password:location?.state?.password || "",
+        }
     });
-    //getValues --> useForm안에 받아놓은 value 반환
-    //setError--> error custumizing
-    //clearErrors --> 원하는 에러 삭제
+    //defaultValues --> 원하는 곳(태그의 name value를 이용)에 원하는 값을 처음에 지정 가능
     const onCompleted = (data) => {
         const {
             login:{ok,error,token}
-        } = data;//받아온 데이터 중 login이라는 데이터안의 ok,error,token 값을 받아옴
-        //이해가 안된다면 consile.log(data) 해보세유
+        } = data;
         if(!ok){
             return setError("result",{
                 message:error
             });
-            //error 발생시 에러를 result:발생한 에러 로 저장하기 위해 사용
         }
         if(token){
             logUserIn(token);
         }
     };
-    /* 함수명을 onCompleted라 지은 이유 
-       --> 아래에 useMutation을 사용할 때 useMutation에서 
-       onCompleted:함수명 을 사용할수 있는데 사용하게되면 useMutation 동작 처리가 끝나기 직전에 
-       불러온 함수를 사용한다
-       onCompleted:함수명 이렇게 쓰기 귀찮으니까 함수명을 onCompleted로 하여 onCompleted만 쓰게하려고
-    */
     const [login,{loading}] = useMutation(LOGIN_MUTATION,{
         onCompleted,
     });
     const clearLoginError = () => {
         clearErrors("result");
-        //위에서 생성한 result:error들을 전부 지움
+
     };
     const onSubmitValid = (data) => {
         if(loading){
@@ -84,6 +83,7 @@ function Login() {
                 <div>
                     <FontAwesomeIcon icon={faInstagram} size="3x"/>
                 </div>
+                <Notification>{location?.state?.message}</Notification>
                 <form onSubmit={handleSubmit(onSubmitValid)}>
                     <Input 
                         ref={register({
