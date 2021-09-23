@@ -55,7 +55,7 @@ function Login() {
             return setError("result",{
                 message:error
             });
-        }
+        }//{"result":{message:"로그인 실패!"}}
         if(token){
             logUserIn(token);
         }
