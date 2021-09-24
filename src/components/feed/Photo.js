@@ -81,29 +81,25 @@ function Photo({ id, user, file, isLiked, likes, caption, commentNumber, comment
             }
         } = result;
         if(ok){
-            const fragmentId = `Photo:${id}`;
-            const fragment = gql`
-                fragment changeLike on Photo {
-                    isLiked
-                    likes
-                }
-            `;
-            const result = cache.readFragment({
-                id:fragmentId,
-                fragment,
-            });
-            if("isLiked" in result && "likes" in result){
-                const {isLiked: cacheIsLiked, likes: cacheLikes} = result;
-                cache.writeFragment({
-                    id:fragmentId,
-                    fragment,
-                    data: {
-                        isLiked: !cacheIsLiked,
-                        likes: cacheIsLiked ? cacheLikes - 1 : cacheLikes + 1 
+            const photoId = `Photo:${id}`;
+            cache.modify({
+                id:photoId,
+                fields:{
+                    isLiked(prev){//이전에 저장된 데이터 불러오는 것이 가능
+                        return !prev;
+                    },
+                    likes(prev){
+                        if(isLiked){
+                            return (prev - 1);
+                        }
+                        return (prev + 1);
                     }
-                });
-            }
+                }
+            });
+            //apollo client에서 사용 apollo 3부터 사용 가능
+            //변경시킬object의 id와 변경시킬 fields{변경 내용} 
         }
+            
     };
     const [toggleLikeMutation] = useMutation(TOGGLE_LIKE_MUTATION, {
         variables: {

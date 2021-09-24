@@ -22,9 +22,10 @@ function Comments({ author, caption, commentNumber, comments }) {
       </CommentCount>
       {comments?.map((comment) => (
         <Comment
-          key={comment.id}
-          author={comment.user.username}
-          payload={comment.payload}
+            
+            key={comment.id}
+            author={comment.user.username}
+            payload={comment.payload}
         />
       ))}
     </CommentsContainer>
