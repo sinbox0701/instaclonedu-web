@@ -134,10 +134,11 @@ function Photo({ id, user, file, isLiked, likes, caption, commentNumber, comment
                 </PhotoActions>
                 <Likes>{likes === 1 ? "1 like" : `${likes} likes`}</Likes>
                 <Comments
-                  author={user.username}
-                  caption={caption}
-                  commentNumber={commentNumber}
-                  comments={comments}
+                    photoId={id}
+                    author={user.username}
+                    caption={caption}
+                    commentNumber={commentNumber}
+                    comments={comments}
                 />
             </PhotoData>
          </PhotoContainer>
@@ -145,17 +146,16 @@ function Photo({ id, user, file, isLiked, likes, caption, commentNumber, comment
 }
 
 Photo.propTypes = {
-  id: PropTypes.number.isRequired,
-  user: PropTypes.shape({
-    avatar: PropTypes.string,
-    username: PropTypes.string.isRequired,
-  }),
-  caption: PropTypes.string,
-  file: PropTypes.string.isRequired,
-  isLiked: PropTypes.bool.isRequired,
-  commentNumber: PropTypes.number.isRequired,
-  likes: PropTypes.number.isRequired,
+    id: PropTypes.number.isRequired,
+    user: PropTypes.shape({
+      avatar: PropTypes.string,
+      username: PropTypes.string.isRequired,
+    }),
+    caption: PropTypes.string,
+    file: PropTypes.string.isRequired,
+    isLiked: PropTypes.bool.isRequired,
+    commentNumber: PropTypes.number.isRequired,
+    likes: PropTypes.number.isRequired,
 };
-//propTypes --> parameter의 data형식을 지정하여 지정한 형식 의외의 값을 받지 못하게함 --> 코드 안전성 
 
 export default Photo;
