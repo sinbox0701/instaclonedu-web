@@ -17,6 +17,7 @@ function useUser() {
   const { data } = useQuery(ME_QUERY, {
     skip: !hasToken,
   });//token이 없으면 useQuery 사용 X
+  //Query문에는 useQuery, Mutation문에는 useMuatation 사용
   
   useEffect(() => {
     if (data?.me === null) {
