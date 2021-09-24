@@ -11,6 +11,7 @@ import PropTypes from "prop-types";
 import styled from "styled-components";
 import Avatar from "../Avatar";
 import { FatText } from "../shared";
+import Comments from "./Comments";
 
 const TOGGLE_LIKE_MUTATION = gql`
   mutation toggleLike($id: Int!) {
@@ -71,7 +72,7 @@ const Likes = styled(FatText)`
     display: block;
 `;
 
-function Photo({ id, user, file, isLiked, likes }) {
+function Photo({ id, user, file, isLiked, likes, caption, commentNumber, comments }) {
     const updateToggleLike = (cache, result) => {
         //cache --> apollo cache //result --> backend data 순서 중요
         const {
@@ -91,9 +92,6 @@ function Photo({ id, user, file, isLiked, likes }) {
                 id:fragmentId,
                 fragment,
             });
-            //cache.readFragment --> cache에 존재하는 Object의 일부분을 읽기
-            //읽을 cache object의 id
-            //읽을 것(fragment) fragment [원하는 이름] on [타입(여기선 Photo)] { 필드 }
             if("isLiked" in result && "likes" in result){
                 const {isLiked: cacheIsLiked, likes: cacheLikes} = result;
                 cache.writeFragment({
@@ -104,10 +102,6 @@ function Photo({ id, user, file, isLiked, likes }) {
                         likes: cacheIsLiked ? cacheLikes - 1 : cacheLikes + 1 
                     }
                 });
-                //cache.writeFragment --> cache에 존재하는 Object의 일부분을 수정
-                //변경할 cache object의 id
-                //변경할 것(fragment) fragment [원하는 이름] on [변경할 타입(여기선 Photo)] { 변경할 필드 }
-                //변경 내용(data) fragment에 작성한 필드의 변경시킬 내용 입력
             }
         }
     };
@@ -117,7 +111,7 @@ function Photo({ id, user, file, isLiked, likes }) {
         },
         update: updateToggleLike
     });
-    //update --> 백엔드에서 받은 데이터를 apollo cache에 직접 연결해줌
+    
     return (
         <PhotoContainer key={id}>
             <PhotoHeader>
@@ -143,6 +137,12 @@ function Photo({ id, user, file, isLiked, likes }) {
                     </div>
                 </PhotoActions>
                 <Likes>{likes === 1 ? "1 like" : `${likes} likes`}</Likes>
+                <Comments
+                  author={user.username}
+                  caption={caption}
+                  commentNumber={commentNumber}
+                  comments={comments}
+                />
             </PhotoData>
          </PhotoContainer>
     );
@@ -154,8 +154,10 @@ Photo.propTypes = {
     avatar: PropTypes.string,
     username: PropTypes.string.isRequired,
   }),
+  caption: PropTypes.string,
   file: PropTypes.string.isRequired,
   isLiked: PropTypes.bool.isRequired,
+  commentNumber: PropTypes.number.isRequired,
   likes: PropTypes.number.isRequired,
 };
 //propTypes --> parameter의 data형식을 지정하여 지정한 형식 의외의 값을 받지 못하게함 --> 코드 안전성 

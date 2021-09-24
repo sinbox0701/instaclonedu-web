@@ -13,7 +13,17 @@ const FEED_QUERY = gql`
             file
             caption
             likes
-            comments
+            comments{
+              id
+              user {
+                username
+                avatar
+              }
+              payload
+              isMine
+              createdAt
+            }
+            commentNumber 
             createdAt
             isMine
             isLiked
@@ -23,7 +33,6 @@ const FEED_QUERY = gql`
 
 function Home() {
     const {data} = useQuery(FEED_QUERY);
-    
     return (
         <div>
             <PageTitle title="Home"/>
