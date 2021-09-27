@@ -8,6 +8,7 @@ import {
 import { faHeart as SolidHeart } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import PropTypes from "prop-types";
+import {Link} from "react-router-dom";
 import styled from "styled-components";
 import Avatar from "../Avatar";
 import { FatText } from "../shared";
@@ -74,7 +75,6 @@ const Likes = styled(FatText)`
 
 function Photo({ id, user, file, isLiked, likes, caption, commentNumber, comments }) {
     const updateToggleLike = (cache, result) => {
-        //cache --> apollo cache //result --> backend data 순서 중요
         const {
             data:{
                 toggleLike: {ok}
@@ -85,7 +85,7 @@ function Photo({ id, user, file, isLiked, likes, caption, commentNumber, comment
             cache.modify({
                 id:photoId,
                 fields:{
-                    isLiked(prev){//이전에 저장된 데이터 불러오는 것이 가능
+                    isLiked(prev){
                         return !prev;
                     },
                     likes(prev){
@@ -96,8 +96,6 @@ function Photo({ id, user, file, isLiked, likes, caption, commentNumber, comment
                     }
                 }
             });
-            //apollo client에서 사용 apollo 3부터 사용 가능
-            //변경시킬object의 id와 변경시킬 fields{변경 내용} 
         }
             
     };
@@ -111,8 +109,12 @@ function Photo({ id, user, file, isLiked, likes, caption, commentNumber, comment
     return (
         <PhotoContainer key={id}>
             <PhotoHeader>
-                <Avatar lg url={user.avatar} />
-                <Username>{user.username}</Username>
+                <Link to={`/users/${user.username}`}>
+                    <Avatar lg url={user.avatar} />
+                </Link>
+                <Link to={`/users/${user.username}`}>
+                    <Username>{user.username}</Username>
+                </Link>
             </PhotoHeader>
             <PhotoFile src={file} />
             <PhotoData>
